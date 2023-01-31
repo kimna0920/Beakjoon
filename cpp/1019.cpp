@@ -1,67 +1,45 @@
 #include <iostream>
 using namespace std;
+long long check[10];
 
-const int MAX = 10;
-
-long long numbers[MAX];
-
-void calculate(int num, int increase)
-{
-	while (num)
-	{
-		numbers[num % 10] += increase;
-
-		num /= 10;
+void calc(long long n, long long ten){
+	while (n > 0) {
+		check[n % 10] += ten;
+		n /= 10;
 	}
+
 }
 
-// placeOfNum: []의 자리 수
-void func(int start, int end, int placeOfNum)
-{
-	while (start % 10 && start <= end)
-	{
-		calculate(start, placeOfNum);
-
-		start++;
+void solve(long long A, long long B, long long ten){
+    while (A % 10 != 0 && A <= B){
+		calc(A, ten);
+		A++;
 	}
 
-	if (start > end)
-	{
-		return;
+	if (A > B) return;
+
+	while (B % 10 != 9 && B >= A){
+		calc(B, ten);
+		B--;
 	}
 
-	while (end % 10 != 9 && start <= end)
-	{
-		calculate(end, placeOfNum);
+	long long cnt = (B / 10 - A / 10 + 1);
+	for (int i = 0; i < 10; ++i){
+        check[i] += cnt * ten;
+    }
 
-		end--;
-	}
+	solve(A / 10, B / 10, ten * 10);
 
-	long long cnt = (end / 10 - start / 10 + 1);
-
-	for (int i = 0; i < MAX; i++)
-	{
-		numbers[i] += cnt * placeOfNum;
-	}
-
-	func(start / 10, end / 10, placeOfNum * 10);
 }
 
-int main(void)
-{
-	ios_base::sync_with_stdio(0);
-	cin.tie(0);
-	int N;
-	cin >> N;
-	
-	func(1, N, 1);
+int main(){
+	long long n;
+	cin >> n;
 
-	for (int i = 0; i < MAX; i++)
-	{
-		cout << numbers[i] << " ";
-	}
+	solve(1, n, 1);
 
-	cout << "\n";
-
+	for (int i = 0; i < 10; ++i){
+        cout << check[i] << " ";
+    }
 	return 0;
 }
