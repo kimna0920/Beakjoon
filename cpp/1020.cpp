@@ -1,71 +1,68 @@
-#include<bits/stdc++.h>
+#include <iostream>
+#include <string>
+#include <cmath>
+#include <vector>
+ 
 using namespace std;
-typedef long long ll;
-typedef pair<int,int> pii;
-typedef pair<ll,ll> pll;
-#define xx first
-#define yy second
-
+ 
 string s;
-const int lineCnt[10] = {6, 2, 5, 5, 4, 5, 6, 3, 7, 5};
-int dp[16][110][2];
-
-int solve(int pos, int left, bool bigger){
-	if(left < 0) return 10;
-	if(pos == s.size()) return (bigger && !left ? 0 : 10);
-	int &ret = dp[pos][left][bigger];
-	if(ret != -1) return ret;
-
-	ret = 10;
-	for(int i=(bigger ? 0 : s[pos]-'0'); i<=9; ++i){
-		int next = solve(pos+1, left - lineCnt[i], bigger || (i > s[pos]-'0'));
-		if(next != 10){
-			ret = i;
-			break;
-		}
-	}
-	return ret;
+int c[10] = { 6,2,5,5,4,5,6,3,7,5 };
+vector<long long> dp[2][15];//up & down , pos
+long long inputTime = 0; // time
+long long max_c = 0;
+ 
+void recurrence(int);
+ 
+int main(void) {
+    cin >> s;
+ 
+    int line = 0;
+ 
+    for (int i = 0; i < s.size(); i++) {
+        line += c[s[i] - '0'];
+        inputTime *= 10;
+        inputTime += (s[i] - '0');
+    }
+ 
+    max_c = (long long)pow(10, s.size());
+   
+    for (int i = 0; i < 15; i++) {
+        dp[0][i] = vector<long long>(106, max_c * 2);
+        dp[1][i] = vector<long long>(106, max_c * 2);
+    }
+ 
+    for (long long i = 0; i < 10; i++) {
+        dp[0][0][c[i]] = min(dp[0][0][c[i]], i);
+ 
+        if (s[s.size() - 1] - '0' < i)
+            dp[1][0][c[i]] = min(dp[1][0][c[i]], i);
+    }
+ 
+    recurrence(1);
+ 
+    cout << min(max_c + dp[0][s.size() - 1][line], dp[1][s.size() - 1][line]) - inputTime << endl;
+ 
+    return 0;
 }
-
-ll goRet;
-ll go(int pos, int left, bool bigger){
-	if(pos == s.size()) return 0;
-	int &ret = dp[pos][left][bigger]; 
-	goRet = goRet * 10 + ret;
-	go(pos+1, left - lineCnt[ret], bigger || (ret > s[pos]-'0'));
-}
-
-ll tenPow(int a){
-	return (a ? 10 * tenPow(a-1) : 1);
-}
-
-int main(){
-	ios_base::sync_with_stdio(0);
-	cin.tie(0);
-
-	string input;
-	cin >> input;
-	
-	int sum = 0;
-	for(char &c : input)
-		sum += lineCnt[c - '0'];
-
-
-	memset(dp, -1, sizeof(dp));
-	s = string(input.size(), '0');
-	solve(0, sum, 0);
-	goRet = 0;
-	go(0, sum, 0);
-	ll ans = goRet - stoll(input) + tenPow(s.size());
-
-
-	memset(dp, -1, sizeof(dp));
-	s = input;
-	if(solve(0, sum, 0) != 10){
-		goRet = 0;
-		go(0, sum, 0);
-		ans = goRet - stoll(input);
-	}
-
-	cout << ans;
+ 
+void recurrence(int index) {
+    if (index == s.size()) return;
+ 
+    for (int i = index * 2; i <= index * 7; i++) {
+        long long nextTime;
+        for (int j = 0; j < 10; j++) {
+            nextTime = dp[0][index - 1][i] + (long long)pow(10, index) * j;
+            dp[0][index][i + c[j]] = min(dp[0][index][i + c[j]], nextTime);
+ 
+            if (s[s.size() - 1 - index] - '0' < j)
+                dp[1][index][i + c[j]] = min(dp[1][index][i + c[j]], nextTime);
+        }
+ 
+        for (int j = s[s.size() - 1 - index] - '0'; j < 10; j++) {
+            nextTime = dp[1][index - 1][i] + (long long)pow(10, index) * j;
+            dp[1][index][i + c[j]] = min(dp[1][index][i + c[j]], nextTime);
+        }
+    }
+ 
+    recurrence(index + 1);
 }
